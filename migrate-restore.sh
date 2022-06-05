@@ -25,7 +25,7 @@ SERVER_ID="$(curl -s "${HEADERS[@]}" -X GET $API_URL/servers -s | jq '.servers[]
 SERVER_SITES="$(curl "${HEADERS[@]}" -X GET $API_URL/servers/$SERVER_ID/sites -s | jq -r '.sites[].name')"
 DB_USER_ID="$(curl "${HEADERS[@]}" -X GET $API_URL/servers/$SERVER_ID/database-users -s | jq '.users[] | select(.name=='\"$USER\"').id')"
 
-curl -s "${HEADERS[@]}" -X GET $API_URL/servers -s | jq '.'
+echo "$(curl -s "${HEADERS[@]}" -X GET $API_URL/servers -s | jq '.')"
 
 echo "System Configuration"
 echo "  Server Name: $SERVERNAME"
