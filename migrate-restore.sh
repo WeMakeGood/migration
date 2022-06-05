@@ -73,6 +73,7 @@ while read APP SITE URL ARCHIVE PREFIX NEWSITE; do
 			exit 99
 		fi
 	fi
+	echo $SITE_DB_ID
 
 	# Add the database to the user
 	DB_USER_DBS="$(curl -s "${HEADERS[@]}" -X GET $API_URL/servers/$SERVER_ID/database-users/$DB_USER_ID | jq -c '.user.databases')"
@@ -80,6 +81,7 @@ while read APP SITE URL ARCHIVE PREFIX NEWSITE; do
 		DB_USER_DBS="$(echo "$DB_USER_DBS" | jq -c '. += ['$SITE_DB_ID'] | unique')"
 		curl -s "${HEADERS[@]}" -X PUT $API_URL/servers/$SERVER_ID/database-users/$DB_USER_ID -d '{"databases": '"$DB_USER_DBS"'}' >/dev/null
 	fi
+	echo $DB_USER_DBS
 
 	# Get the site ID or make it
 	SITE_ID="$(curl -s "${HEADERS[@]}" -X GET $API_URL/servers/$SERVER_ID/sites | jq '.sites[] | select(.name=="'$SITE'").id')"
@@ -91,6 +93,7 @@ while read APP SITE URL ARCHIVE PREFIX NEWSITE; do
 			exit 99
 		fi
 	fi
+	echo $SITE_ID
 
 	# Install WordPress if we need it
 	if [ ! -f $SITE_ROOT/wp-config.php ]; then
