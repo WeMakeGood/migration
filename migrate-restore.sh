@@ -3,7 +3,7 @@
 # Set up the environment with API and SERVER keys
 export $(grep -v '^#' .forge | xargs -d '\n')
 
-if [ -v $API_TOKEN ]; then
+if [ -v "$API_TOKEN" ]; then
 	echo "You must create an environment file called .forge and include API_TOKEN with a valid Forge token."
 	exit 99
 fi
@@ -20,7 +20,7 @@ SERVERNAME="$(hostname)"
 API_URL="https://forge.laravel.com/api/v1"
 
 # Set up some Forge information
-HEADERS=(-H "Authorization: Bearer $API_TOKEN" -H "Accept: application/json" -H "Content-Type: application/json")
+HEADERS='-H "Authorization: Bearer '"$API_TOKEN"'" -H "Accept: application/json" -H "Content-Type: application/json"'
 SERVER_ID="$(curl -s "${HEADERS[@]}" -X GET $API_URL/servers -s | jq '.servers[] | select(.name="$SERVERNAME").id')"
 SERVER_SITES="$(curl "${HEADERS[@]}" -X GET $API_URL/servers/$SERVER_ID/sites -s | jq -r '.sites[].name')"
 DB_USER_ID="$(curl "${HEADERS[@]}" -X GET $API_URL/servers/$SERVER_ID/database-users -s | jq '.users[] | select(.name=='\"$USER\"').id')"
@@ -42,6 +42,9 @@ if [ ! -f "$SITES" ]; then
 	echo "Unpacking the migration file."
 	tar xf migrate.tar.gz --checkpoint=.1000 --totals
 fi
+
+echo "The migration package has been expanded. Would you like to restore your sites? (Y/n)"
+if [ read == "n" ]; then exit 99; fi
 
 # Parse the sites.csv
 OLDIFS=$IFS
