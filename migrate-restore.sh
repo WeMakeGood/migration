@@ -44,7 +44,8 @@ if [ ! -f "$SITES" ]; then
 fi
 
 echo "The migration package has been expanded. Would you like to restore your sites? (Y/n)"
-if [ read == "n" ]; then exit 99; fi
+read CONTINUE
+if [ "$CONTINUE" == "n" ]; then exit 99; fi
 
 # Parse the sites.csv
 OLDIFS=$IFS
