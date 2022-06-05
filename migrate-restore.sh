@@ -76,7 +76,7 @@ while read APP SITE URL ARCHIVE PREFIX NEWSITE; do
 	echo $SITE_DB_ID
 
 	# Add the database to the user
-	DB_USER_DBS="$(curl -s "${HEADERS[@]}" -X GET $API_URL/servers/$SERVER_ID/database-users/$DB_USER_ID | jq -c '.user.databases')"
+	DB_USER_DBS="$(curl -s "${HEADERS[@]}" -X GET $API_URL/servers/$SERVER_ID/database-users/$DB_USER_ID | jq -c '.')"
 	if [[ ! "$DB_USER_DBS" == *"$SITE_DB_ID"* ]]; then
 		DB_USER_DBS="$(echo "$DB_USER_DBS" | jq -c '. += ['$SITE_DB_ID'] | unique')"
 		curl -s "${HEADERS[@]}" -X PUT $API_URL/servers/$SERVER_ID/database-users/$DB_USER_ID -d '{"databases": '"$DB_USER_DBS"'}' >/dev/null
@@ -87,7 +87,7 @@ while read APP SITE URL ARCHIVE PREFIX NEWSITE; do
 	SITE_ID="$(curl -s "${HEADERS[@]}" -X GET $API_URL/servers/$SERVER_ID/sites | jq '.sites[] | select(.name=="'$SITE'").id')"
 	if [ -v $SITE_ID ]; then
 		echo "Creating site..."
-		SITE_ID="$(curl -s "${HEADERS[@]}" -X POST $API_URL/servers/$SERVER_ID/sites -d '{"domain":"'"$SITE"'","project_type":"php","directory":"/public","isolated":true,"username":"'"$USER"'","php_version":"php80"}' | jq -cr '.site.id')"
+		SITE_ID="$(curl -s "${HEADERS[@]}" -X POST $API_URL/servers/$SERVER_ID/sites -d '{"domain":"'"$SITE"'","project_type":"php","directory":"/public","isolated":true,"username":"'"$USER"'","php_version":"php80"}' | jq -cr '.')"
 		if [[ $SITE_ID =~ ^-?[0-9]+$ ]]; then
 			echo $SITE_ID
 			exit 99
