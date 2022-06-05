@@ -21,10 +21,7 @@ API_URL="https://forge.laravel.com/api/v1"
 
 # Set up some Forge information
 HEADERS=(-H "Authorization: Bearer $API_TOKEN" -H "Accept: application/json" -H "Content-Type: application/json")
-echo "$API_TOKEN"
-echo "$(curl "${HEADERS[@]}" -X GET $API_URL/servers)"
-
-SERVER_ID="$(curl -s "${HEADERS[@]}" -X GET $API_URL/servers -s | jq '.servers[] | select(.name="$SERVERNAME").id')"
+SERVER_ID="$(curl -s "${HEADERS[@]}" -X GET $API_URL/servers -s | jq '.servers[] | select(.name | contains("$SERVERNAME")).id')"
 SERVER_SITES="$(curl "${HEADERS[@]}" -X GET $API_URL/servers/$SERVER_ID/sites -s | jq -r '.sites[].name')"
 DB_USER_ID="$(curl "${HEADERS[@]}" -X GET $API_URL/servers/$SERVER_ID/database-users -s | jq '.users[] | select(.name=='\"$USER\"').id')"
 
