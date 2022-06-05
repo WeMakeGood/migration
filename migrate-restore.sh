@@ -100,6 +100,9 @@ while read APP SITE URL ARCHIVE PREFIX NEWSITE; do
 	# Install WordPress if we need it
 	if [ ! -f $SITE_ROOT/wp-config.php ]; then
 		echo "Installing WordPress..."
+		# Clean out the current WP, just in case
+		curl -s "${HEADERS[@]}" -X DELETE $API_URL/servers/$SERVER_ID/sites/$SITE_ID/wordpress > /dev/null
+		# Create a new WP installation
 		curl -s "${HEADERS[@]}" -X POST $API_URL/servers/$SERVER_ID/sites/$SITE_ID/wordpress -d '{"database": "'"$SITE_DB_NAME"'", "user": '"$DB_USER_ID"'}' >/dev/null
 		until [ -f $SITE_ROOT/wp-config.php ]; do
 			sleep 1
