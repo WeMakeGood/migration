@@ -68,6 +68,10 @@ while read APP SITE URL ARCHIVE PREFIX NEWSITE; do
 		echo "Adding database..."
 		# Create the database
 		SITE_DB_ID="$(curl -s "${HEADERS[@]}" -X POST $API_URL/servers/$SERVER_ID/databases --data '{"name":"'"$SITE_DB_NAME"'"}' | jq '.database.id')"
+		if [[ $SITE_DB_ID =~ ^-?[0-9]+$ ]]; then
+			echo $SITE_DB_ID
+			exit 99
+		fi
 	fi
 
 	# Add the database to the user
@@ -82,6 +86,10 @@ while read APP SITE URL ARCHIVE PREFIX NEWSITE; do
 	if [ -v $SITE_ID ]; then
 		echo "Creating site..."
 		SITE_ID="$(curl -s "${HEADERS[@]}" -X POST $API_URL/servers/$SERVER_ID/sites -d '{"domain":"'"$SITE"'","project_type":"php","directory":"/public","isolated":true,"username":"'"$USER"'","php_version":"php80"}' | jq -cr '.site.id')"
+		if [[ $SITE_ID =~ ^-?[0-9]+$ ]]; then
+			echo $SITE_ID
+			exit 99
+		fi
 	fi
 
 	# Install WordPress if we need it
