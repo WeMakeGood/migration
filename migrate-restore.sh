@@ -94,7 +94,8 @@ while read APP SITE URL ARCHIVE PREFIX NEWSITE; do
 	else
 		# Create a new DB user if providing shared hosting
 		DB_PASSWORD="$(tr -cd '[:alnum:]' </dev/urandom | fold -w30 | head -n1)"
-		curl -s "${HEADERS[@]}" -X POST $API_URL/servers/$SERVER_ID/database-users -d '{"name": "'"$SITE_DB_NAME"'", "password": "'"$DB_PASSWORD"'", "databases": '"$DB_USER_DBS"'}' >/dev/null
+		echo "$DB_PASSWORD $SITE_DB_NAME"
+		curl -s "${HEADERS[@]}" -X POST $API_URL/servers/$SERVER_ID/database-users -d '{"name": "'$SITE_DB_NAME'", "password": "'$DB_PASSWORD'", "databases": '"$DB_USER_DBS"'}' >/dev/null
 	fi
 
 	# Get the site ID or make it
