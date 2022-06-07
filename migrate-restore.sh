@@ -95,12 +95,10 @@ while read APP SITE URL ARCHIVE PREFIX NEWSITE; do
 	else
 		# Create a new DB user if providing shared hosting
 		SITE_DB_USER="$(curl -s "${HEADERS[@]}" -X GET $API_URL/servers/$SERVER_ID/database-users | jq '.users[] | select(.name=="'$SITE_DB_NAME'").id')"
-		echo "Before $SITE_DB_USER"
 		if [[ ! "$SITE_DB_USER" =~ ^-?[0-9]+$ ]]; then
 			DB_PASSWORD="$(tr -cd '[:alnum:]' </dev/urandom | fold -w30 | head -n1)"
 			SITE_DB_USER="$(curl -s "${HEADERS[@]}" -X POST $API_URL/servers/$SERVER_ID/database-users -d '{"name":"'$SITE_DB_NAME'","password":"'$DB_PASSWORD'","databases": ['"$SITE_DB_ID"']}' | jq -cr '.user.id')"
 		fi
-		echo "After $SITE_DB_USER"
 	fi
 
 	# Get the site ID or make it
