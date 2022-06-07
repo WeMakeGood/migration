@@ -17,7 +17,7 @@ else
 	rm -Rf $MIGRATE/*
 fi
 # If no app was specified, make a list
-if [ -v $APPS ]; then APPS = "$(ls $ROOT/apps/)"; fi
+if [ -v $APPS ]; then APPS="$(ls $ROOT/apps/)"; fi
 # Iterate through the apps folder
 for APP in $APPS; do
 	echo "Backing up: $APP"
