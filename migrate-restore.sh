@@ -99,6 +99,8 @@ while read APP SITE URL ARCHIVE PREFIX NEWSITE; do
 		SITE_DB_USER="$(curl -s "${HEADERS[@]}" -X POST $API_URL/servers/$SERVER_ID/database-users -d '{"name": "'"$SITE_DB_NAME"'", "password": "'"$DB_PASSWORD"'", "databases": '"$DB_USER_DBS"'}' | jq -cr '.user.id')"
 	fi
 
+	echo SITE_DB_USER
+	
 	# Get the site ID or make it
 	SITE_ID="$(curl -s "${HEADERS[@]}" -X GET $API_URL/servers/$SERVER_ID/sites | jq '.sites[] | select(.name=="'$SITE'").id')"
 	if [ -v $SITE_ID ]; then
