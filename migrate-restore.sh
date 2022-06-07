@@ -83,6 +83,7 @@ while read APP SITE URL ARCHIVE PREFIX NEWSITE; do
 		fi
 	fi
 
+	SITE_DB_USER=$DB_USER_ID
 	# Add the database to the user
 	if [ $SINGLE_DB == "" ]; then
 		# Add to isolated user DB if using a single DB
@@ -95,7 +96,7 @@ while read APP SITE URL ARCHIVE PREFIX NEWSITE; do
 		# Create a new DB user if providing shared hosting
 		DB_PASSWORD="$(tr -cd '[:alnum:]' </dev/urandom | fold -w30 | head -n1)"
 		echo "$DB_PASSWORD $SITE_DB_NAME"
-		curl -s "${HEADERS[@]}" -X POST $API_URL/servers/$SERVER_ID/database-users -d '{"name": "'$SITE_DB_NAME'", "password": "'$DB_PASSWORD'", "databases": '"$DB_USER_DBS"'}' >/dev/null
+		SITE_DB_USER="$(curl -s "${HEADERS[@]}" -X POST $API_URL/servers/$SERVER_ID/database-users -d '{"name": "'"$SITE_DB_NAME"'", "password": "'"$DB_PASSWORD"'", "databases": '"$DB_USER_DBS"'}' | jq -cr '.user.id')"
 	fi
 
 	# Get the site ID or make it
@@ -116,7 +117,7 @@ while read APP SITE URL ARCHIVE PREFIX NEWSITE; do
 		curl -s "${HEADERS[@]}" -X DELETE $API_URL/servers/$SERVER_ID/sites/$SITE_ID/wordpress >/dev/null
 		sleep 5
 		# Create a new WP installation
-		curl -s "${HEADERS[@]}" -X POST $API_URL/servers/$SERVER_ID/sites/$SITE_ID/wordpress -d '{"database": "'"$SITE_DB_NAME"'", "user": '"$DB_USER_ID"'}' >/dev/null
+		curl -s "${HEADERS[@]}" -X POST $API_URL/servers/$SERVER_ID/sites/$SITE_ID/wordpress -d '{"database": "'"$SITE_DB_NAME"'", "user": '"$SITE_DB_USER"'}' >/dev/null
 		until [ -f $SITE_ROOT/wp-config.php ]; do
 			sleep 1
 		done
