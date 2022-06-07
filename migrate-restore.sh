@@ -95,12 +95,10 @@ while read APP SITE URL ARCHIVE PREFIX NEWSITE; do
 	else
 		# Create a new DB user if providing shared hosting
 		DB_PASSWORD="$(tr -cd '[:alnum:]' </dev/urandom | fold -w30 | head -n1)"
-		echo "$(curl "${HEADERS[@]}" https://httpbin.org/post -d '{"name":"'$SITE_DB_NAME'","password":"'$DB_PASSWORD'","databases": ['"$SITE_DB_ID"']}')"
+		SITE_DB_USER="$(curl --trace-ascii "${HEADERS[@]}" -X POST $API_URL/servers/$SERVER_ID/database-users -d '{"name":"'$SITE_DB_NAME'","password":"'$DB_PASSWORD'","databases": ['"$SITE_DB_ID"']}' | jq -cr '.')"
+		echo "$SITE_DB_USER"
 		exit 99
-		SITE_DB_USER="$(curl --trace-ascii "${HEADERS[@]}" -X POST $API_URL/servers/$SERVER_ID/database-users -d '{"name":"'$SITE_DB_NAME'","password":"'$DB_PASSWORD'","databases": '"$DB_USER_DBS"'}' | jq -cr '.')"
 	fi
-
-	echo "$SITE_DB_USER"
 
 	# Get the site ID or make it
 	SITE_ID="$(curl -s "${HEADERS[@]}" -X GET $API_URL/servers/$SERVER_ID/sites | jq '.sites[] | select(.name=="'$SITE'").id')"
