@@ -30,6 +30,10 @@ echo "  Server Name: $SERVERNAME"
 echo "  Server ID: $SERVER_ID"
 echo "  DB User ID: $DB_USER_ID"
 
+echo "Would you like to use a single, shared DB for all installs? [Y/n]"
+echo "- Select no (n) if this is a shared hosting server."
+read SINGLE_DB
+
 # Download the migration file if neccessary
 if [ ! -f "$MIGRATE/migrate.tar.gz" ]; then
 	echo "Please provide the migration file URL:"
@@ -63,7 +67,7 @@ while read APP SITE URL ARCHIVE PREFIX NEWSITE; do
 	cd $MIGRATE
 	unset IFS
 	echo "Processing site: $SITE"
-	SITE_DB_NAME=${SITE//./_}
+	SITE_DB_NAME=${SITE//[.-]/_}
 	SITE_ROOT="$ROOT/$SITE/public"
 
 	# Check for an existing database
@@ -80,10 +84,17 @@ while read APP SITE URL ARCHIVE PREFIX NEWSITE; do
 	fi
 
 	# Add the database to the user
-	DB_USER_DBS="$(curl -s "${HEADERS[@]}" -X GET $API_URL/servers/$SERVER_ID/database-users/$DB_USER_ID | jq -c '.user.databases')"
-	if [[ ! "$DB_USER_DBS" == *"$SITE_DB_ID"* ]]; then
-		DB_USER_DBS="$(echo "$DB_USER_DBS" | jq -c '. += ['$SITE_DB_ID'] | unique')"
-		curl -s "${HEADERS[@]}" -X PUT $API_URL/servers/$SERVER_ID/database-users/$DB_USER_ID -d '{"databases": '"$DB_USER_DBS"'}' >/dev/null
+	if [ $SINGLE_DB == "" ]; then
+		# Add to isolated user DB if using a single DB
+		DB_USER_DBS="$(curl -s "${HEADERS[@]}" -X GET $API_URL/servers/$SERVER_ID/database-users/$DB_USER_ID | jq -c '.user.databases')"
+		if [[ ! "$DB_USER_DBS" == *"$SITE_DB_ID"* ]]; then
+			DB_USER_DBS="$(echo "$DB_USER_DBS" | jq -c '. += ['$SITE_DB_ID'] | unique')"
+			curl -s "${HEADERS[@]}" -X PUT $API_URL/servers/$SERVER_ID/database-users/$DB_USER_ID -d '{"databases": '"$DB_USER_DBS"'}' >/dev/null
+		fi
+	else
+		# Create a new DB user if providing shared hosting
+		DB_PASSWORD="$(tr -cd '[:alnum:]' </dev/urandom | fold -w30 | head -n1)"
+		curl -s "${HEADERS[@]}" -X POST $API_URL/servers/$SERVER_ID/database-users -d '{"name": "'"$SITE_DB_NAME"'", "password": "'"$DB_PASSWORD"'", "databases": '"$DB_USER_DBS"'}' >/dev/null
 	fi
 
 	# Get the site ID or make it
@@ -101,7 +112,7 @@ while read APP SITE URL ARCHIVE PREFIX NEWSITE; do
 	if [ ! -f $SITE_ROOT/wp-config.php ]; then
 		echo "Installing WordPress..."
 		# Clean out the current WP, just in case
-		curl -s "${HEADERS[@]}" -X DELETE $API_URL/servers/$SERVER_ID/sites/$SITE_ID/wordpress > /dev/null
+		curl -s "${HEADERS[@]}" -X DELETE $API_URL/servers/$SERVER_ID/sites/$SITE_ID/wordpress >/dev/null
 		sleep 5
 		# Create a new WP installation
 		curl -s "${HEADERS[@]}" -X POST $API_URL/servers/$SERVER_ID/sites/$SITE_ID/wordpress -d '{"database": "'"$SITE_DB_NAME"'", "user": '"$DB_USER_ID"'}' >/dev/null

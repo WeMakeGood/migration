@@ -1,6 +1,11 @@
 #!/bin/bash
+# Determine if we're backing up a single site or multiple
+echo "Which app would you like to back up? [ALL/app]"
+read APPS
+# Get the upload app directory
 echo "Into which app should the archive be placed?"
 read MIGRATEAPP
+# Establish the user root and set up variables
 cd
 ROOT="$(pwd)"
 MIGRATE=$ROOT/migrate
@@ -11,8 +16,10 @@ if [ ! -d $MIGRATE ]; then
 else
 	rm -Rf $MIGRATE/*
 fi
+# If no app was specified, make a list
+if [ -v APPS ]; then APPS = "$(ls $ROOT/apps/)"; fi
 # Iterate through the apps folder
-for APP in $(ls $ROOT/apps/); do
+for APP in $APPS; do
 	echo "Backing up: $APP"
 	cd $ROOT/apps/$APP/public
 	if [ -f $ROOT/apps/$APP/public/wp-config.php ]; then
