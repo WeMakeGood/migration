@@ -95,10 +95,10 @@ while read APP SITE URL ARCHIVE PREFIX NEWSITE; do
 	else
 		# Create a new DB user if providing shared hosting
 		DB_PASSWORD="$(tr -cd '[:alnum:]' </dev/urandom | fold -w30 | head -n1)"
-		PAYLOAD="{'name':'$SITE_DB_NAME','password':'$DB_PASSWORD','databases': $DB_USER_DBS}"
+		PAYLOAD="{'name':'$SITE_DB_NAME','password':'$DB_PASSWORD','databases': [$SITE_DB_ID]}"
 		echo $PAYLOAD
 		exit 99
-		SITE_DB_USER="$(curl -s "${HEADERS[@]}" -X POST $API_URL/servers/$SERVER_ID/database-users -d $PAYLOAD | jq -cr '.user.id')"
+		SITE_DB_USER="$(curl -s "${HEADERS[@]}" -X POST $API_URL/servers/$SERVER_ID/database-users -d "$PAYLOAD" | jq -cr '.user.id')"
 	fi
 
 	echo "$SITE_DB_USER"
