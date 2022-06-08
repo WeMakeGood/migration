@@ -10,8 +10,10 @@ ROOT="$(pwd)"
 
 for SITE in $(ls $ROOT); do
 	if [ -d $ROOT/$SITE/public ]; then
+		echo "Processing $SITE..."
 		cd $ROOT/$SITE/public
-		$($COMMAND)
+		${COMMAND[@]}
+		echo ""
 	fi
 done
 echo "Processing complete!"
